@@ -1,0 +1,77 @@
+<mxfile host="app.diagrams.net" modified="2026-05-26T00:00:00.000Z" agent="FYP" version="22.1.0">
+  <diagram id="arch" name="3.1 System Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="Presentation Layer&#xa;Browser — React + Tailwind" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="40" width="280" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="Next.js Application (apps/web)&#xa;Middleware · API Routes · NextAuth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="340" y="160" width="360" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Business Logic&#xa;Conflict · Approval · Notifications" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="380" y="280" width="280" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="PostgreSQL&#xa;Prisma ORM" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="200" y="400" width="160" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Redis + BullMQ Worker&#xa;(apps/worker)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="400" width="180" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="2" target="3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="8" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="3" target="4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="9" style="endArrow=classic;html=1;exitX=0.25;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="4" target="5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="10" style="endArrow=classic;html=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="4" target="6"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="er" name="3.2 ER Diagram">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="org" value="ORGANIZATION&#xa;id, name, slug" style="shape=table;startSize=30;container=1;collapsible=0;childLayout=tableLayout;fixedRows=1;fillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="40" y="120" width="140" height="60" as="geometry"/></mxCell>
+        <mxCell id="user" value="USER&#xa;id, email, role, orgId" style="shape=table;startSize=30;container=1;collapsible=0;fillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="240" y="40" width="150" height="60" as="geometry"/></mxCell>
+        <mxCell id="dept" value="DEPARTMENT&#xa;id, name, orgId" style="shape=table;startSize=30;container=1;collapsible=0;fillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="240" y="140" width="150" height="60" as="geometry"/></mxCell>
+        <mxCell id="venue" value="VENUE&#xa;id, name, code, orgId" style="shape=table;startSize=30;container=1;collapsible=0;fillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="240" y="240" width="150" height="60" as="geometry"/></mxCell>
+        <mxCell id="event" value="EVENT&#xa;id, title, status, times&#xa;venueId, organizerId" style="shape=table;startSize=30;container=1;collapsible=0;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="480" y="120" width="170" height="70" as="geometry"/></mxCell>
+        <mxCell id="notif" value="NOTIFICATION&#xa;id, userId, type" style="shape=table;startSize=30;container=1;collapsible=0;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="480" y="260" width="150" height="60" as="geometry"/></mxCell>
+        <mxCell id="conf" value="CONFLICT_LOG&#xa;venueId, newEventId" style="shape=table;startSize=30;container=1;collapsible=0;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="700" y="120" width="160" height="60" as="geometry"/></mxCell>
+        <mxCell id="e1" style="endArrow=ERmany;startArrow=ERone;html=1;" edge="1" parent="1" source="org" target="user"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=ERmany;startArrow=ERone;html=1;" edge="1" parent="1" source="org" target="dept"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=ERmany;startArrow=ERone;html=1;" edge="1" parent="1" source="org" target="venue"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=ERmany;startArrow=ERone;html=1;" edge="1" parent="1" source="venue" target="event"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=ERmany;startArrow=ERone;html=1;" edge="1" parent="1" source="user" target="event"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=ERmany;startArrow=ERone;html=1;" edge="1" parent="1" source="user" target="notif"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="endArrow=ERmany;startArrow=ERone;html=1;" edge="1" parent="1" source="event" target="conf"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="flow" name="3.4 Approval Flowchart">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="s" value="Start" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="340" y="20" width="100" height="50" as="geometry"/></mxCell>
+        <mxCell id="c" value="Create Event" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="320" y="100" width="140" height="50" as="geometry"/></mxCell>
+        <mxCell id="v" value="Validate" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="330" y="180" width="120" height="70" as="geometry"/></mxCell>
+        <mxCell id="cd" value="Conflict Check" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="320" y="280" width="140" height="50" as="geometry"/></mxCell>
+        <mxCell id="p" value="Save PENDING" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1"><mxGeometry x="320" y="360" width="140" height="50" as="geometry"/></mxCell>
+        <mxCell id="a" value="Approver Decision" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="310" y="440" width="160" height="80" as="geometry"/></mxCell>
+        <mxCell id="ap" value="APPROVED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="180" y="560" width="120" height="50" as="geometry"/></mxCell>
+        <mxCell id="rj" value="REJECTED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="480" y="560" width="120" height="50" as="geometry"/></mxCell>
+        <mxCell id="e" value="End" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="340" y="660" width="100" height="50" as="geometry"/></mxCell>
+        <mxCell id="l1" style="endArrow=classic;html=1;" edge="1" parent="1" source="s" target="c"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l2" style="endArrow=classic;html=1;" edge="1" parent="1" source="c" target="v"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l3" style="endArrow=classic;html=1;" edge="1" parent="1" source="v" target="cd"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l4" style="endArrow=classic;html=1;" edge="1" parent="1" source="cd" target="p"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l5" style="endArrow=classic;html=1;" edge="1" parent="1" source="p" target="a"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l6" style="endArrow=classic;html=1;" edge="1" parent="1" source="a" target="ap"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l7" style="endArrow=classic;html=1;" edge="1" parent="1" source="a" target="rj"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l8" style="endArrow=classic;html=1;" edge="1" parent="1" source="ap" target="e"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="l9" style="endArrow=classic;html=1;" edge="1" parent="1" source="rj" target="e"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

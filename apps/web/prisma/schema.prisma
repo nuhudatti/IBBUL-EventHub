@@ -1,0 +1,400 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  APPROVER
+  USER
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum EventStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum EventType {
+  SEMINAR
+  WORKSHOP
+  CONFERENCE
+  SPORTS
+  CULTURAL
+  MEETING
+  OTHER
+}
+
+enum EventVisibility {
+  PUBLIC
+  INTERNAL
+  DEPARTMENT
+  INVITE_ONLY
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  WAITLISTED
+  CANCELLED
+  ATTENDED
+}
+
+enum NotificationType {
+  EVENT_CREATED
+  EVENT_APPROVED
+  EVENT_REJECTED
+  EVENT_REMINDER
+  CONFLICT_DETECTED
+  REGISTRATION_CONFIRMED
+  SYSTEM_ALERT
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+}
+
+enum UserScope {
+  UNIVERSITY
+  FACULTY
+  DEPARTMENT
+  PUBLIC
+}
+
+enum ApprovalLevel {
+  DEPARTMENT
+  FACULTY
+  UNIVERSITY
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logo        String?
+  domain      String?
+  tagline     String?
+  address     String?
+  website     String?
+  plan        Plan     @default(FREE)
+  settings    Json?
+  users       User[]
+  departments Department[]
+  venues      Venue[]
+  buildings   Building[]
+  categories  EventCategory[]
+  events      Event[]
+  auditLogs   AuditLog[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+model User {
+  id                String              @id @default(cuid())
+  email             String              @unique
+  password          String?
+  name              String
+  avatar            String?
+  bio               String?
+  role              UserRole            @default(USER)
+  status            UserStatus          @default(PENDING)
+  scope             UserScope           @default(DEPARTMENT)
+  organizationId    String
+  departmentId      String?
+  facultyId         String?
+  emailVerified     DateTime?
+  lastLoginAt       DateTime?
+  preferences       Json?
+  organization      Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department        Department?         @relation("DepartmentUsers", fields: [departmentId], references: [id], onDelete: SetNull)
+  faculty           Department?         @relation("FacultyUsers", fields: [facultyId], references: [id], onDelete: SetNull)
+  sessions          Session[]
+  events            Event[]             @relation("OrganizerEvents")
+  approvedEvents    Event[]             @relation("ApprovedEvents")
+  registrations     EventRegistration[]
+  notifications     Notification[]
+  conflictResolves  ConflictLog[]       @relation("ResolvedConflicts")
+  activities        ActivityLog[]
+  auditLogs         AuditLog[]
+  managedDepartment Department[]        @relation("DepartmentHead")
+  accounts          Account[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  deletedAt         DateTime?
+
+  @@index([organizationId, role])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, expiresAt])
+}
+
+model Department {
+  id             String       @id @default(cuid())
+  name           String
+  slug           String
+  description    String?
+  color          String?
+  headId         String?
+  organizationId String
+  parentId       String?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users          User[]       @relation("DepartmentUsers")
+  events         Event[]
+  head           User?        @relation("DepartmentHead", fields: [headId], references: [id], onDelete: SetNull)
+  parent         Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children       Department[] @relation("DepartmentHierarchy")
+  facultyUsers   User[]       @relation("FacultyUsers")
+  buildings      Building[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, parentId])
+}
+
+model Building {
+  id             String       @id @default(cuid())
+  name           String
+  code           String
+  description    String?
+  organizationId String
+  departmentId   String?
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  department     Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  venues         Venue[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  @@unique([organizationId, code])
+  @@index([organizationId, departmentId])
+}
+
+model EventCategory {
+  id             String       @id @default(cuid())
+  name           String
+  slug           String
+  isActive       Boolean      @default(true)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  events         Event[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, isActive])
+}
+
+model Venue {
+  id               String       @id @default(cuid())
+  name             String
+  code             String
+  description      String?
+  location         String?
+  floor            String?
+  building         String?
+  coordinates      Json?
+  capacity         Int?
+  amenities        Json?
+  images           String[]
+  isActive         Boolean      @default(true)
+  requiresApproval Boolean      @default(false)
+  buildingId       String?
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  buildingRel      Building?    @relation(fields: [buildingId], references: [id], onDelete: SetNull)
+  events           Event[]
+  conflicts        ConflictLog[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  deletedAt        DateTime?
+
+  @@unique([organizationId, code])
+  @@index([organizationId, isActive])
+}
+
+model Event {
+  id                   String              @id @default(cuid())
+  title                String
+  slug                 String
+  description          String
+  coverImage           String?
+  status               EventStatus         @default(DRAFT)
+  type                 EventType           @default(OTHER)
+  categoryId           String?
+  approvalLevel        ApprovalLevel       @default(DEPARTMENT)
+  visibility           EventVisibility     @default(INTERNAL)
+  startTime            DateTime
+  endTime              DateTime
+  timezone             String
+  isRecurring          Boolean             @default(false)
+  recurrenceRule       Json?
+  venueId              String
+  organizerId          String
+  departmentId         String
+  organizationId       String
+  maxAttendees         Int?
+  registrationDeadline DateTime?
+  tags                 String[]
+  metadata             Json?
+  rejectionReason      String?
+  approvedBy           String?
+  approvedAt           DateTime?
+  venue                Venue               @relation(fields: [venueId], references: [id], onDelete: Restrict)
+  organizer            User                @relation("OrganizerEvents", fields: [organizerId], references: [id], onDelete: Restrict)
+  department           Department          @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  category             EventCategory?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  organization         Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  approver             User?               @relation("ApprovedEvents", fields: [approvedBy], references: [id], onDelete: SetNull)
+  registrations        EventRegistration[]
+  newConflicts         ConflictLog[]       @relation("NewEventConflict")
+  conflictingWith      ConflictLog[]       @relation("ConflictingEvent")
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  deletedAt            DateTime?
+
+  @@unique([organizationId, slug])
+  @@index([organizationId, status, startTime])
+  @@index([venueId, startTime, endTime])
+}
+
+model EventRegistration {
+  id          String             @id @default(cuid())
+  eventId     String
+  userId      String
+  status      RegistrationStatus @default(REGISTERED)
+  checkedInAt DateTime?
+  event       Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
+  deletedAt   DateTime?
+
+  @@unique([eventId, userId])
+  @@index([eventId, status])
+}
+
+model Notification {
+  id        String              @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  type      NotificationType
+  data      Json?
+  channel   NotificationChannel @default(IN_APP)
+  isRead    Boolean             @default(false)
+  readAt    DateTime?
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime            @default(now())
+  deletedAt DateTime?
+
+  @@index([userId, isRead, createdAt])
+}
+
+model ConflictLog {
+  id                 String   @id @default(cuid())
+  venueId            String
+  newEventId         String
+  conflictingEventId String
+  resolvedAt         DateTime?
+  resolvedBy         String?
+  venue              Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  newEvent           Event    @relation("NewEventConflict", fields: [newEventId], references: [id], onDelete: Cascade)
+  conflictingEvent   Event    @relation("ConflictingEvent", fields: [conflictingEventId], references: [id], onDelete: Cascade)
+  resolver           User?    @relation("ResolvedConflicts", fields: [resolvedBy], references: [id], onDelete: SetNull)
+  createdAt          DateTime @default(now())
+
+  @@index([venueId, createdAt])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entityType String
+  entityId  String
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  userId         String
+  organizationId String
+  action         String
+  resource       String
+  resourceId     String
+  metadata       Json?
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

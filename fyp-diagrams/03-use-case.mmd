@@ -1,0 +1,60 @@
+%% Figure 3.3 — Use Case Diagram
+
+flowchart LR
+    subgraph Actors
+        V((Viewer))
+        U((User / Lecturer))
+        A((Approver))
+        AD((Admin))
+        SA((Super Admin))
+    end
+
+    subgraph System["University Event Scheduling System"]
+        UC1([Login / Register])
+        UC2([View Approved Events])
+        UC3([Create Event])
+        UC4([View Calendar])
+        UC5([Export Calendar])
+        UC6([Approve Event])
+        UC7([Reject Event])
+        UC8([View Conflicts])
+        UC9([Manage Users])
+        UC10([View Analytics])
+        UC11([View Notifications])
+        UC12([List Venues])
+    end
+
+    V --> UC1
+    V --> UC2
+    V --> UC4
+    V --> UC5
+    V --> UC11
+
+    U --> UC1
+    U --> UC3
+    U --> UC2
+    U --> UC4
+    U --> UC11
+    U --> UC12
+
+    A --> UC1
+    A --> UC6
+    A --> UC7
+    A --> UC8
+    A --> UC2
+    A --> UC4
+    A --> UC11
+    A --> UC12
+
+    AD --> UC1
+    AD --> UC9
+    AD --> UC10
+    AD --> UC6
+    AD --> UC7
+    AD --> UC8
+
+    SA --> UC1
+    SA --> UC9
+    SA --> UC10
+    SA --> UC6
+    SA --> UC7

@@ -1,0 +1,30 @@
+%% Figure 3.4 — Activity Diagram: Event Approval Workflow
+
+flowchart TD
+    Start([Start]) --> Login[User logs in]
+    Login --> Create[Fill event creation form]
+    Create --> Validate{Valid input?}
+    Validate -->|No| ShowErr[Show validation errors]
+    ShowErr --> Create
+    Validate -->|Yes| ConflictCheck[Run conflict detection]
+    ConflictCheck --> Save[Save event as PENDING]
+    Save --> NotifyApp[Notify approvers in-system]
+    ConflictCheck --> HasConflict{Overlap found?}
+    HasConflict -->|Yes| LogConflict[Create ConflictLog record]
+    LogConflict --> NotifyConflict[Notify approvers of conflict]
+    NotifyConflict --> Save
+    HasConflict -->|No| Save
+    Save --> Review[Approver reviews event]
+    Review --> Decision{Approve or Reject?}
+    Decision -->|Reject| Reject[Set status REJECTED + reason]
+    Reject --> NotifyOrgR[Notify organiser]
+    NotifyOrgR --> End([End])
+    Decision -->|Approve| ReCheck[Re-run conflict check]
+    ReCheck --> Clear{Slot free?}
+    Clear -->|No| Block[Block approval — show error]
+    Block --> Review
+    Clear -->|Yes| Approve[Set status APPROVED]
+    Approve --> ResolveLog[Resolve related conflict logs]
+    ResolveLog --> NotifyOrgA[Notify organiser]
+    NotifyOrgA --> Calendar[Event visible on calendar]
+    Calendar --> End

@@ -1,0 +1,36 @@
+OPEN THIS FILE FOR YOUR SUBMISSION REPORT
+==========================================
+
+  FYP-Final-Submission-IBBUL.docx   (in this folder)
+
+REGENERATE (after editing the .md source)
+-----------------------------------------
+  pnpm fyp:docx
+  OR
+  python scripts/build_fyp_docx.py
+
+WHAT IS FORMATTED FOR YOU
+-------------------------
+  - Times New Roman 12pt, 1.5 line spacing, justified body text
+  - Bordered tables (Table Grid style)
+  - Page breaks before each CHAPTER and front-matter sections
+  - Yellow INSERT boxes for every diagram and screenshot
+  - Red banner: "INSERT FIGURE X.X BELOW THIS LINE"
+  - Caption + source file path under each box
+
+BEFORE YOU PRINT
+----------------
+1. Open FYP-Final-Submission-IBBUL.docx in Word OR upload to Google Drive
+2. Replace [STUDENT ONE FULL NAME], [STUDENT TWO FULL NAME], matric, supervisor, date
+3. In each YELLOW BOX:
+   - Diagrams: export PNG from fyp-diagrams/*.mmd at https://mermaid.live
+   - Screenshots: capture from running app (see FYP-Screenshots-Checklist.md)
+   - Paste image INSIDE the box, delete the grey placeholder text
+4. File → Download → PDF (Google Docs) or Save as PDF (Word)
+5. Print and bind
+
+TEST LOGIN (for screenshots)
+----------------------------
+  approver@nexus.dev / ChangeMe123!
+  user@nexus.dev / ChangeMe123!
+  admin@nexus.dev / ChangeMe123!

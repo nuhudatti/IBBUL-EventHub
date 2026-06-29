@@ -1,0 +1,52 @@
+:root {
+  --color-bg: 220 23% 98%;
+  --color-panel: 0 0% 100%;
+  --color-panel-muted: 220 20% 97%;
+  --color-border: 220 16% 90%;
+  --color-border-strong: 220 14% 82%;
+  --color-text: 222 22% 14%;
+  --color-text-muted: 220 10% 42%;
+  --color-primary: 243 75% 59%;
+  --color-primary-soft: 243 82% 97%;
+  --color-success: 160 84% 39%;
+  --color-warning: 38 92% 50%;
+  --color-danger: 0 84% 60%;
+  --color-info: 217 91% 60%;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 4px 14px rgba(15, 23, 42, 0.05);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+
+  --motion-fast: 150ms;
+  --motion-default: 220ms;
+}
+
+.dark {
+  --color-bg: 222 24% 8%;
+  --color-panel: 222 20% 11%;
+  --color-panel-muted: 222 18% 14%;
+  --color-border: 220 13% 22%;
+  --color-border-strong: 220 12% 30%;
+  --color-text: 220 20% 95%;
+  --color-text-muted: 220 12% 65%;
+  --color-primary-soft: 243 34% 18%;
+}

@@ -1,0 +1,35 @@
+%% Figure 3.1 — System Architecture Diagram
+%% Export: https://mermaid.live → PNG/SVG → insert into Word/Google Docs
+
+flowchart TB
+    subgraph Client["Presentation Layer (Browser)"]
+        UI["Next.js Pages<br/>React + Tailwind CSS"]
+    end
+
+    subgraph WebApp["Application Layer — apps/web"]
+        MW["Middleware<br/>Auth + RBAC"]
+        API["API Routes<br/>/api/v1/*"]
+        AUTH["NextAuth v5<br/>JWT Sessions"]
+        BL["Business Logic<br/>Conflict · Approval · Notify"]
+    end
+
+    subgraph WorkerApp["Background Layer — apps/worker"]
+        BQ["BullMQ Worker"]
+        MAIL["Nodemailer<br/>(prepared)"]
+    end
+
+    subgraph Data["Data Layer"]
+        PG[("PostgreSQL")]
+        RD[("Redis")]
+    end
+
+    UI --> MW
+    MW --> UI
+    UI --> API
+    UI --> AUTH
+    API --> BL
+    BL --> PG
+    AUTH --> PG
+    BQ --> RD
+    BQ --> MAIL
+    API -.->|future email jobs| RD

@@ -1,0 +1,33 @@
+%% Sequence Diagram — Approve Pending Event
+
+sequenceDiagram
+    actor Approver
+    participant UI as Events Page
+    participant API as PATCH /events/id/approve
+    participant Auth as NextAuth Session
+    participant Svc as event-review.ts
+    participant CD as conflict.ts
+    participant DB as PostgreSQL
+    participant Org as Organiser Inbox
+
+    Approver->>UI: Click Approve
+    UI->>API: PATCH request + cookie
+    API->>Auth: Verify session & role
+    Auth-->>API: APPROVER confirmed
+    API->>Svc: approvePendingEvent()
+    Svc->>DB: Load event (PENDING)
+    Svc->>CD: detectVenueConflict()
+    CD->>DB: Query overlapping events
+    DB-->>CD: Result
+  alt Conflict exists
+        CD-->>Svc: conflicting event
+        Svc-->>API: CONFLICT error
+        API-->>UI: 409 response
+    else No conflict
+        Svc->>DB: Update status APPROVED
+        Svc->>DB: Create notification
+        Svc->>DB: Resolve ConflictLog rows
+        Svc-->>API: Success
+        API-->>UI: 200 OK
+        DB-->>Org: EVENT_APPROVED notification
+    end

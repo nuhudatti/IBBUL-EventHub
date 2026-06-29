@@ -1,0 +1,20 @@
+%% Figure — Deployment Diagram (development / pilot)
+
+flowchart TB
+    subgraph DevMachine["Developer / Pilot Server"]
+        Browser[Web Browser]
+        Next[Next.js :3000]
+        Worker[BullMQ Worker]
+    end
+
+    subgraph Docker["Docker Compose"]
+        PG[(PostgreSQL :5432)]
+        Redis[(Redis :6379)]
+        PgAdmin[pgAdmin :5050]
+    end
+
+    Browser -->|HTTP| Next
+    Next --> PG
+    Next --> Redis
+    Worker --> Redis
+    PgAdmin --> PG

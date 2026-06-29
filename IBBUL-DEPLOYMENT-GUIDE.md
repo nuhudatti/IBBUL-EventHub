@@ -1,0 +1,200 @@
+# IBBUL Event Platform — Deployment & Email Guide
+
+**System:** University Event Scheduling & Notification System  
+**Institution:** Ibrahim Badamasi Babangida University, Lapai  
+**Motto:** *Learning for Service*
+
+---
+
+## 1. What was delivered
+
+| Feature | Status |
+|---------|--------|
+| IBBUL-branded login (gate background + logo + navy/gold) | Ready |
+| Specific login errors (no account, wrong password, pending, suspended) | Ready |
+| User invitation emails (role + IBBUL branding) | Ready |
+| Forgot password + reset password emails | Ready |
+| Accept-invite / reset-password pages (matching brand) | Ready |
+
+Assets live in: `apps/web/public/branding/`
+- `ibbul-gate.jpg` — login background
+- `ibbul-logo.png` — university logo
+
+---
+
+## 2. Environment variables (required)
+
+Copy `.env.example` to `.env` and `apps/web/.env`:
+
+```env
+DATABASE_URL="postgresql://nexus:nexus@localhost:5433/nexus_dev?schema=public"
+NEXTAUTH_SECRET="<generate-32+-char-random-string>"
+NEXTAUTH_URL="https://your-production-domain.edu.ng"
+
+MAIL_ENABLED="true"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+SMTP_FROM="IBBUL Event Platform <your-email@gmail.com>"
+SMTP_REPLY_TO="events@ibbul.edu.ng"
+```
+
+### Generate NEXTAUTH_SECRET (PowerShell)
+
+```powershell
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+```
+
+---
+
+## 3. SMTP setup options (real inbox delivery)
+
+### Option A — Gmail (quick demo / FYP)
+
+1. Enable **2-Step Verification** on the Google account.
+2. Create an **App Password**: Google Account → Security → App passwords.
+3. Use:
+   - `SMTP_HOST=smtp.gmail.com`
+   - `SMTP_PORT=587`
+   - `SMTP_USER=your@gmail.com`
+   - `SMTP_PASS=16-char-app-password`
+   - `SMTP_FROM="IBBUL Event Platform <your@gmail.com>"`
+
+### Option B — University domain (best for production)
+
+Use your ICT office SMTP relay, e.g.:
+
+```env
+SMTP_HOST=mail.ibbul.edu.ng
+SMTP_PORT=587
+SMTP_USER=noreply@ibbul.edu.ng
+SMTP_PASS=<ict-provided-password>
+SMTP_FROM="IBBUL Event Platform <noreply@ibbul.edu.ng>"
+```
+
+Ask ICT to configure **SPF**, **DKIM**, and **DMARC** for your sending domain — this is the main factor for inbox vs spam.
+
+### Option C — SendGrid / Mailgun / Brevo
+
+Use their SMTP credentials; set `SMTP_FROM` to a verified sender domain.
+
+---
+
+## 4. Avoid spam folder (checklist)
+
+1. **Use a real From address** on your domain (`SMTP_FROM`).
+2. **Set SPF record** on DNS: allow your SMTP server to send for `@ibbul.edu.ng`.
+3. **Enable DKIM** signing (provider or ICT).
+4. **Do not use** `Precedence: bulk` on transactional mail (already removed in code).
+5. **Include plain-text** part (already included).
+6. **Warm up** new sender addresses — send a few test invites to yourself first.
+7. **NEXTAUTH_URL** must match your public URL exactly (links in emails depend on this).
+
+---
+
+## 5. Local development
+
+```powershell
+docker compose up -d
+pnpm install
+pnpm --filter @nexus/web prisma:generate
+pnpm --filter @nexus/web prisma:seed
+pnpm dev
+```
+
+Open: `http://localhost:3000/login`
+
+If SMTP is **not** configured, emails are **previewed in the server console** (terminal running `pnpm dev`).
+
+---
+
+## 6. Production deployment steps
+
+1. **Database** — PostgreSQL (Neon, Railway, or university server). Set `DATABASE_URL`.
+2. **Run migrations:**
+   ```bash
+   pnpm --filter @nexus/web exec prisma migrate deploy
+   pnpm --filter @nexus/web prisma:seed   # first time only
+   ```
+3. **Build & start:**
+   ```bash
+   pnpm --filter @nexus/web build
+   pnpm --filter @nexus/web start
+   ```
+4. **Set env** on host (Vercel, Railway, VPS): all vars from section 2.
+5. **HTTPS** required for production cookies and email links.
+6. **Restart** after env changes.
+
+---
+
+## 7. Test email delivery
+
+### Invitation flow
+1. Login as `super@nexus.dev` / `ChangeMe123!`
+2. Users → Invite user → real email you control
+3. Check inbox for **"IBBUL Event Platform — Your … account invitation"**
+4. Click **Activate my account** → set password → login
+
+### Forgot password flow
+1. Go to `/forgot-password`
+2. Enter email of an **active** user with password set
+3. Check inbox for **"Reset your password"**
+4. Open link → `/reset-password?email=...&token=...`
+5. Set new password → login
+
+---
+
+## 8. Login error messages (user-facing)
+
+| Situation | Message |
+|-----------|---------|
+| Email not in database | No account exists with this email… |
+| Wrong password | Incorrect password. Try again or use Forgot password. |
+| Invitation not accepted | Your account is not activated yet… |
+| Account deactivated | This account has been deactivated… |
+| No password set | Use your invitation link to activate… |
+
+---
+
+## 9. FYP presentation demo script
+
+1. Show **IBBUL login page** (branding + Learning for Service)
+2. **System Admin** → invite lecturer → show email on phone/laptop
+3. Lecturer activates account via email link
+4. Lecturer creates event → **Dr. Musa** approves
+5. Student sees event + notification
+
+Demo accounts (password `ChangeMe123!`): see login page → "Show FYP demo accounts"
+
+---
+
+## 10. Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `Unexpected end of JSON input` | Restart dev server; run `prisma generate` |
+| Email not sending | Check `MAIL_ENABLED=true`, SMTP credentials, terminal for `[IBBUL mail error]` |
+| Email in spam | Use university domain + SPF/DKIM; mark as "Not spam" once |
+| Reset link expired | Links expire in **2 hours**; request again |
+| Invite link expired | Links expire in **7 days**; re-invite user |
+| Login still fails after seed | Log out; use exact demo email; password `ChangeMe123!` |
+
+---
+
+## 11. Files reference
+
+| Path | Purpose |
+|------|---------|
+| `lib/email/send.ts` | SMTP delivery |
+| `lib/email/templates/messages.ts` | Invitation + reset HTML |
+| `lib/server/invitation.ts` | Invite tokens |
+| `lib/server/password-reset.ts` | Reset tokens |
+| `app/api/v1/auth/login-check/route.ts` | Specific login errors |
+| `app/api/v1/auth/forgot-password/route.ts` | Send reset email |
+| `components/auth/ibbul-auth-shell.tsx` | Shared auth UI |
+
+---
+
+*Prepared for Final Year Project presentation — IBBUL, Lapai.*

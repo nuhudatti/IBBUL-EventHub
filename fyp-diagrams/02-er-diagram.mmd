@@ -1,0 +1,83 @@
+%% Figure 3.2 — Entity-Relationship Diagram (core entities)
+%% Export via mermaid.live
+
+erDiagram
+    ORGANIZATION ||--o{ USER : has
+    ORGANIZATION ||--o{ DEPARTMENT : has
+    ORGANIZATION ||--o{ VENUE : has
+    ORGANIZATION ||--o{ EVENT : has
+    ORGANIZATION ||--o{ AUDIT_LOG : has
+
+    DEPARTMENT ||--o{ USER : employs
+    DEPARTMENT ||--o{ EVENT : hosts
+    DEPARTMENT |o--o{ DEPARTMENT : parent_child
+
+    USER ||--o{ EVENT : organises
+    USER |o--o{ EVENT : approves
+    USER ||--o{ NOTIFICATION : receives
+    USER ||--o{ EVENT_REGISTRATION : registers
+    USER ||--o{ CONFLICT_LOG : resolves
+
+    VENUE ||--o{ EVENT : booked_for
+    VENUE ||--o{ CONFLICT_LOG : occurs_at
+
+    EVENT ||--o{ EVENT_REGISTRATION : has
+    EVENT ||--o{ CONFLICT_LOG : new_event
+    EVENT ||--o{ CONFLICT_LOG : conflicting_event
+
+    ORGANIZATION {
+        string id PK
+        string name
+        string slug UK
+    }
+
+    USER {
+        string id PK
+        string email UK
+        string role
+        string status
+        string organizationId FK
+        string departmentId FK
+    }
+
+    DEPARTMENT {
+        string id PK
+        string name
+        string organizationId FK
+        string parentId FK
+    }
+
+    VENUE {
+        string id PK
+        string name
+        string code
+        string organizationId FK
+    }
+
+    EVENT {
+        string id PK
+        string title
+        string status
+        datetime startTime
+        datetime endTime
+        string venueId FK
+        string organizerId FK
+        string departmentId FK
+        string organizationId FK
+    }
+
+    NOTIFICATION {
+        string id PK
+        string userId FK
+        string type
+        string channel
+        boolean isRead
+    }
+
+    CONFLICT_LOG {
+        string id PK
+        string venueId FK
+        string newEventId FK
+        string conflictingEventId FK
+        datetime resolvedAt
+    }
