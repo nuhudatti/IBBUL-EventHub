@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { format, parseISO } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -296,6 +295,22 @@ export default function UsersPage(): JSX.Element {
               }`}
             >
               {r === "ALL" ? "All roles" : getRoleDisplayName(r)}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {(["ALL", "ACTIVE", "PENDING", "SUSPENDED"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStatusFilter(s)}
+              className={`rounded-full border px-2.5 py-1 text-xs ${
+                statusFilter === s
+                  ? "border-[hsl(var(--color-primary)/0.2)] bg-[hsl(var(--color-primary-soft))] text-[hsl(var(--color-primary))]"
+                  : "border-[hsl(var(--color-border))] text-[hsl(var(--color-text-muted))]"
+              }`}
+            >
+              {s === "ALL" ? "All statuses" : s.charAt(0) + s.slice(1).toLowerCase()}
             </button>
           ))}
         </div>

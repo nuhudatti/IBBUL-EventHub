@@ -334,7 +334,7 @@ async function main(): Promise<void> {
       coverImage: null,
       status: EventStatus.APPROVED,
       type: EventType.CULTURAL,
-      categoryId: orientationCategory?.id,
+      categoryId: orientationCategory?.id ?? null,
       approvalLevel: ApprovalLevel.UNIVERSITY,
       visibility: EventVisibility.PUBLIC,
       timezone: "Africa/Lagos",

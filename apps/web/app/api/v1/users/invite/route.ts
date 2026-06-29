@@ -40,8 +40,8 @@ export async function POST(request: NextRequest): Promise<Response> {
       name: parsed.data.name,
       email: parsed.data.email,
       role: parsed.data.role,
-      departmentId: parsed.data.departmentId,
-      facultyId: parsed.data.facultyId,
+      departmentId: parsed.data.departmentId ?? null,
+      facultyId: parsed.data.facultyId ?? null,
       scope,
       baseUrl
     });

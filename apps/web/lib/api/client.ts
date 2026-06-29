@@ -51,5 +51,8 @@ export async function requestApiWithMessage<T>(url: string, init?: RequestInit):
     err.details = result.error.details;
     throw err;
   }
-  return { data: result.data, message: result.message };
+  if (result.message !== undefined) {
+    return { data: result.data, message: result.message };
+  }
+  return { data: result.data };
 }

@@ -95,9 +95,9 @@ export async function POST(request: NextRequest): Promise<Response> {
       data: {
         name: parsed.data.name,
         code: parsed.data.code.toUpperCase(),
-        description: parsed.data.description,
-        building: parsed.data.building,
-        capacity: parsed.data.capacity,
+        description: parsed.data.description ?? null,
+        building: parsed.data.building ?? null,
+        capacity: parsed.data.capacity ?? null,
         organizationId: session.user.organizationId,
         images: []
       },

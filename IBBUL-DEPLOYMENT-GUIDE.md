@@ -110,7 +110,51 @@ If SMTP is **not** configured, emails are **previewed in the server console** (t
 
 ---
 
-## 6. Production deployment steps
+## 6. Deploy to Vercel (monorepo)
+
+This repo is a **pnpm + Turbo monorepo**. Only `apps/web` deploys to Vercel (the worker is not needed on Vercel).
+
+### Vercel project settings
+
+| Setting | Value |
+|---------|--------|
+| **Root Directory** | `apps/web` |
+| **Framework** | Next.js |
+| **Include source files outside Root Directory** | **Enabled** (required) |
+| **Install Command** | (auto from `apps/web/vercel.json`) |
+| **Build Command** | (auto from `apps/web/vercel.json`) |
+
+The repo includes `apps/web/vercel.json` which runs `pnpm install` from the monorepo root and builds only `@nexus/web`.
+
+### Environment variables on Vercel
+
+Add these in **Project → Settings → Environment Variables**:
+
+- `DATABASE_URL` — Neon/Supabase/Railway PostgreSQL URL
+- `NEXTAUTH_SECRET` — random 32+ char string
+- `NEXTAUTH_URL` — `https://your-app.vercel.app` (exact production URL)
+- `MAIL_ENABLED`, `SMTP_*` — for invitation/reset emails
+
+### After deploy
+
+```bash
+pnpm --filter @nexus/web exec prisma migrate deploy
+pnpm --filter @nexus/web prisma:seed   # first time only
+```
+
+Or run migrations from Neon SQL console / local machine against production `DATABASE_URL`.
+
+### Common Vercel errors
+
+| Error | Fix |
+|-------|-----|
+| `next: command not found` | Enable **Include source files outside Root Directory**; Root Directory = `apps/web`; push latest `vercel.json` |
+| `node_modules missing` | Install must run from repo root — use provided `vercel.json` install command |
+| Prisma client error on build | `build` script includes `prisma generate` — redeploy after pulling latest |
+
+---
+
+## 7. Production deployment steps (VPS / self-hosted)
 
 1. **Database** — PostgreSQL (Neon, Railway, or university server). Set `DATABASE_URL`.
 2. **Run migrations:**

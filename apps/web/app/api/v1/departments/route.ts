@@ -73,9 +73,9 @@ export async function POST(request: NextRequest): Promise<Response> {
       data: {
         name: parsed.data.name,
         slug: parsed.data.slug,
-        description: parsed.data.description,
-        color: parsed.data.color,
-        parentId: parsed.data.parentId,
+        description: parsed.data.description ?? null,
+        color: parsed.data.color ?? null,
+        parentId: parsed.data.parentId ?? null,
         organizationId: session.user.organizationId
       },
       select: {

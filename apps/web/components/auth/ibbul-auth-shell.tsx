@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { Route } from "next";
 import type { PropsWithChildren } from "react";
 import { Card } from "@/components/ui/card";
 
 type IbbulAuthShellProps = PropsWithChildren<{
   title: string;
-  subtitle?: string;
+  subtitle?: string | undefined;
 }>;
 
 export function IbbulAuthShell({ title, subtitle, children }: IbbulAuthShellProps): JSX.Element {
@@ -78,7 +79,7 @@ export function IbbulAuthSuccess({ message }: { message: string }): JSX.Element 
 export function IbbulAuthLink({ href, children }: { href: string; children: React.ReactNode }): JSX.Element {
   return (
     <Link
-      href={href}
+      href={href as Route}
       className="text-sm font-medium text-[hsl(var(--color-primary))] transition-colors hover:underline"
     >
       {children}
