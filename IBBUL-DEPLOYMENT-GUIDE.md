@@ -137,51 +137,26 @@ If you previously set custom Install/Build commands in the Vercel dashboard, **c
 
 | Variable | Value |
 |----------|--------|
-| `DATABASE_URL` | Neon **direct** connection string (host **without** `-pooler`). Example: `postgresql://USER:PASS@ep-xxx.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require` |
-| `RUN_DB_SEED` | `1` for **one deploy only** (creates demo users), then delete this variable |
+| `DATABASE_URL` | Neon connection string. **Direct** host preferred (`ep-xxx...neon.tech`). Pooler URLs also work — build strips `-pooler` automatically. Use `?sslmode=require` only (no `channel_binding`). |
 | `NEXTAUTH_SECRET` | random 32+ character string |
 | `NEXTAUTH_URL` | `https://ibbul-event-hub.vercel.app` (exact URL) |
 | `REDIS_URL` | `redis://localhost:6379` or Upstash URL |
 
-**Neon connection tips (fixes P1001 locally / empty 500 on login):**
+**Demo users are seeded automatically on every Vercel deploy** (upserts — safe). No `RUN_DB_SEED` variable needed.
 
-- Do **not** use `channel_binding=require` in the URL (breaks Prisma on Windows).
-- From your PC, port `5432` may be blocked — migrations run **automatically on Vercel build** when `DATABASE_URL` is set.
-- In Neon dashboard, confirm the project is **Active** (wake it if suspended).
-- **Rotate your Neon password** if it was ever pasted in chat or committed.
+**Neon tips:** wake project in Neon dashboard if suspended; rotate password if exposed.
 
-**First production deploy:**
+**Login after deploy:** `admin@nexus.dev` / `ChangeMe123!` (also `super@nexus.dev`, `user@nexus.dev`, `approver@nexus.dev`)
 
-1. Set `DATABASE_URL` + `RUN_DB_SEED=1` on Vercel.
-2. Redeploy — build runs `prisma migrate deploy` + seed.
-3. Remove `RUN_DB_SEED` and redeploy again (optional).
-4. Login: `admin@nexus.dev` / `ChangeMe123!`
+### Database on Vercel (automatic)
 
-### After deploy — initialize production database (required for login)
+Each Vercel build runs `prisma db push` + demo seed when `DATABASE_URL` is set. You do **not** need to run migrations from your PC.
 
-Vercel deploys the app only; it does **not** create database tables. If login returns **500** and logs show `The table public.User does not exist` (Prisma `P2021`), run migrations against your **production** `DATABASE_URL`:
+If the build fails at `vercel-build.mjs`, check **Build Logs** for the Prisma error and confirm:
 
-1. Copy `DATABASE_URL` from **Vercel → Settings → Environment Variables** (Production).
-2. From your machine (PowerShell):
-
-```powershell
-cd apps\web
-$env:DATABASE_URL="paste-your-production-postgres-url-here"
-pnpm prisma:deploy
-pnpm prisma:seed
-```
-
-Or from repo root:
-
-```bash
-DATABASE_URL="paste-production-url" pnpm db:deploy
-DATABASE_URL="paste-production-url" pnpm db:seed
-```
-
-3. Confirm `NEXTAUTH_URL` on Vercel matches your live URL exactly, e.g. `https://ibbul-event-hub.vercel.app`.
-4. Try login with a seeded account: `admin@nexus.dev` / `ChangeMe123!`
-
-**Neon / Supabase tip:** use the **pooled** connection string for `DATABASE_URL` on Vercel if the host offers one; ensure SSL is enabled (`?sslmode=require` on many providers).
+1. Neon project is **Active** (not suspended) in the Neon dashboard.
+2. `DATABASE_URL` on Vercel is correct (copy fresh from Neon → Connection string → **Direct**).
+3. URL ends with `?sslmode=require` — remove `channel_binding=require` if present.
 
 ### Fix `404 DEPLOYMENT_NOT_FOUND` on `*.vercel.app`
 
@@ -207,8 +182,9 @@ Required **Environment Variables** (Production): `DATABASE_URL`, `NEXTAUTH_SECRE
 | `pnpm add @prisma/client` during build | Fix `@prisma/client` version in `apps/web/package.json` (must not be empty); run install before build |
 | `npm run vercel-build` failed | Remove npm build override; use `cd ../.. && pnpm vercel-build` |
 | `ERR_PNPM_FROZEN_LOCKFILE_WITH_OUTDATED_LOCKFILE` | Commit `pnpm-lock.yaml` to git (remove from `.gitignore`), push, redeploy |
-| Prisma `P2021` / `User` table does not exist | Run `pnpm db:deploy` with production `DATABASE_URL`, then `pnpm db:seed` |
-| Login 500 empty response | Usually missing DB migrations — see **After deploy — initialize production database** |
+| Prisma `P2021` / `User` table does not exist | Redeploy — build auto-runs `db push` + seed; ensure `DATABASE_URL` is set on Vercel |
+| `vercel-build.mjs` / migrate failed | Use Neon **direct** URL; wake DB in Neon dashboard; remove `channel_binding` from URL |
+| Login 500 empty response | Check Vercel build logs for DB errors; confirm `NEXTAUTH_URL` matches live domain |
 
 ---
 
