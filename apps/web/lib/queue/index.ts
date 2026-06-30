@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { redis } from "@/lib/redis/client";
+import { env } from "@/lib/validators/env";
 
 export interface NotificationJobPayload {
   to: string;
@@ -7,6 +7,10 @@ export interface NotificationJobPayload {
   body: string;
 }
 
+/** Use connection options (not a Redis instance) so BullMQ and ioredis share one type path. */
 export const notificationQueue = new Queue<NotificationJobPayload>("notifications", {
-  connection: redis
+  connection: {
+    url: env.REDIS_URL,
+    maxRetriesPerRequest: null
+  }
 });

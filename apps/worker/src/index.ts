@@ -1,10 +1,11 @@
 import { Worker } from "bullmq";
-import IORedis from "ioredis";
 import { processNotification } from "./processors/notification.processor";
 
-const connection = new IORedis(process.env.REDIS_URL ?? "redis://localhost:6379");
+const redisUrl = process.env.REDIS_URL ?? "redis://localhost:6379";
 
-const worker = new Worker("notifications", processNotification, { connection });
+const worker = new Worker("notifications", processNotification, {
+  connection: { url: redisUrl, maxRetriesPerRequest: null }
+});
 
 worker.on("ready", () => {
   console.log("NEXUS worker ready.");

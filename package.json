@@ -21,6 +21,9 @@
     "node": ">=20"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "prisma", "esbuild", "sharp"]
+    "onlyBuiltDependencies": ["@prisma/client", "@prisma/engines", "prisma", "esbuild", "sharp"],
+    "overrides": {
+      "ioredis": "5.11.1"
+    }
   }
 }
