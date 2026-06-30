@@ -16,7 +16,7 @@
     "@mohtasham/md-to-docx": "^2.18.0",
     "turbo": "^2.0.0",
     "typescript": "^5.6.3",
-    "prisma": "^5.22.0"
+    "prisma": "5.22.0"
   },
   "engines": {
     "node": ">=20"
