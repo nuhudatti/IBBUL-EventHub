@@ -20,51 +20,66 @@ export async function POST(request: NextRequest): Promise<Response> {
   }
 
   const email = parsed.data.email.trim().toLowerCase();
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true, email: true, password: true, status: true, deletedAt: true, name: true }
-  });
 
-  if (!user || user.deletedAt) {
-    return fail(
-      "USER_NOT_FOUND",
-      "No account exists with this email. Contact your administrator or use the invitation link you received.",
-      undefined,
-      404
-    );
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, email: true, password: true, status: true, deletedAt: true, name: true }
+    });
+
+    if (!user || user.deletedAt) {
+      return fail(
+        "USER_NOT_FOUND",
+        "No account exists with this email. Contact your administrator or use the invitation link you received.",
+        undefined,
+        404
+      );
+    }
+
+    if (user.status === "PENDING") {
+      return fail(
+        "ACCOUNT_PENDING",
+        "Your account is not activated yet. Open the invitation email and set your password first.",
+        undefined,
+        403
+      );
+    }
+
+    if (user.status === "SUSPENDED") {
+      return fail(
+        "ACCOUNT_SUSPENDED",
+        "This account has been deactivated. Contact the university administrator.",
+        undefined,
+        403
+      );
+    }
+
+    if (!user.password) {
+      return fail(
+        "NO_PASSWORD",
+        "No password is set for this account. Use your invitation link to activate your account.",
+        undefined,
+        403
+      );
+    }
+
+    const valid = await compare(parsed.data.password, user.password);
+    if (!valid) {
+      return fail("INVALID_PASSWORD", "Incorrect password. Try again or use Forgot password.", undefined, 401);
+    }
+
+    return ok({ email: user.email, name: user.name }, "Credentials valid.");
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? String(error.code) : "";
+    if (code === "P2021") {
+      return fail(
+        "DATABASE_NOT_READY",
+        "The production database has not been initialized. Run prisma migrate deploy against your production DATABASE_URL.",
+        undefined,
+        503
+      );
+    }
+    console.error("login-check failed", error);
+    return fail("INTERNAL_ERROR", "Login check failed. Please try again shortly.", undefined, 500);
   }
-
-  if (user.status === "PENDING") {
-    return fail(
-      "ACCOUNT_PENDING",
-      "Your account is not activated yet. Open the invitation email and set your password first.",
-      undefined,
-      403
-    );
-  }
-
-  if (user.status === "SUSPENDED") {
-    return fail(
-      "ACCOUNT_SUSPENDED",
-      "This account has been deactivated. Contact the university administrator.",
-      undefined,
-      403
-    );
-  }
-
-  if (!user.password) {
-    return fail(
-      "NO_PASSWORD",
-      "No password is set for this account. Use your invitation link to activate your account.",
-      undefined,
-      403
-    );
-  }
-
-  const valid = await compare(parsed.data.password, user.password);
-  if (!valid) {
-    return fail("INVALID_PASSWORD", "Incorrect password. Try again or use Forgot password.", undefined, 401);
-  }
-
-  return ok({ email: user.email, name: user.name }, "Credentials valid.");
 }

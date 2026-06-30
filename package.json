@@ -7,6 +7,8 @@
     "dev": "turbo run dev --parallel",
     "build": "turbo run build",
     "vercel-build": "pnpm --filter @nexus/web run build",
+    "db:deploy": "pnpm --filter @nexus/web run prisma:deploy",
+    "db:seed": "pnpm --filter @nexus/web run prisma:seed",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "format": "turbo run format",
