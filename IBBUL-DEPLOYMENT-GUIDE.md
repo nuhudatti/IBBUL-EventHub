@@ -119,12 +119,18 @@ This repo is a **pnpm + Turbo monorepo**. Only `apps/web` deploys to Vercel (the
 | Setting | Value |
 |---------|--------|
 | **Root Directory** | `apps/web` |
-| **Framework** | Next.js |
+| **Framework Preset** | Next.js |
 | **Include source files outside Root Directory** | **Enabled** (required) |
-| **Install Command** | (auto from `apps/web/vercel.json`) |
-| **Build Command** | (auto from `apps/web/vercel.json`) |
+| **Install Command** | **Override OFF** — or exactly: `cd ../.. && corepack enable && pnpm install --frozen-lockfile` |
+| **Build Command** | **Override OFF** — or exactly: `cd ../.. && pnpm vercel-build` |
+| **Output Directory** | *(leave default — Next.js)* |
+| **Development Command** | *(leave default)* |
 
-The repo includes `apps/web/vercel.json` which runs `pnpm install` from the monorepo root and builds only `@nexus/web`.
+**Do not use `npm run vercel-build`.** This repo uses **pnpm** (`packageManager: pnpm@10.0.0`). If Vercel runs npm, install fails and you see `node_modules missing` and Prisma `pnpm add` errors.
+
+If you previously set custom Install/Build commands in the Vercel dashboard, **clear them** (toggle Override off) so `apps/web/vercel.json` is used, or paste the exact commands above.
+
+The repo includes `apps/web/vercel.json` which installs from the monorepo root and builds only `@nexus/web`.
 
 ### Environment variables on Vercel
 
@@ -148,9 +154,12 @@ Or run migrations from Neon SQL console / local machine against production `DATA
 
 | Error | Fix |
 |-------|-----|
-| `next: command not found` | Enable **Include source files outside Root Directory**; Root Directory = `apps/web`; push latest `vercel.json` |
-| `node_modules missing` | Install must run from repo root — use provided `vercel.json` install command |
-| Prisma client error on build | `build` script includes `prisma generate` — redeploy after pulling latest |
+| `next: command not found` | Enable **Include source files outside Root Directory**; Root Directory = `apps/web`; use pnpm install from root |
+| `node_modules missing` | Do not use npm — use pnpm install from repo root (see `vercel.json`) |
+| `pnpm add @prisma/client` during build | Fix `@prisma/client` version in `apps/web/package.json` (must not be empty); run install before build |
+| `npm run vercel-build` failed | Remove npm build override; use `cd ../.. && pnpm vercel-build` |
+| npm warnings about `node-linker` | Harmless if install uses pnpm; caused when npm reads `.npmrc` — switch to pnpm |
+| Prisma client error on build | `build` script runs `prisma generate` — redeploy after pulling latest |
 
 ---
 
