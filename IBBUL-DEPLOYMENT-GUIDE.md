@@ -123,8 +123,9 @@ This repo is a **pnpm + Turbo monorepo**. Only `apps/web` deploys to Vercel (the
 | **Include source files outside Root Directory** | **Enabled** (required) |
 | **Install Command** | **Override OFF** — or exactly: `cd ../.. && corepack enable && pnpm install --frozen-lockfile` |
 | **Build Command** | **Override OFF** — or exactly: `cd ../.. && pnpm vercel-build` |
-| **Output Directory** | *(leave default — Next.js)* |
+| **Output Directory** | *(leave empty — do not set `.next` manually)* |
 | **Development Command** | *(leave default)* |
+| **Production Branch** | `main` (or your default branch) |
 
 **Do not use `npm run vercel-build`.** This repo uses **pnpm** (`packageManager: pnpm@10.0.0`). If Vercel runs npm, install fails and you see `node_modules missing` and Prisma `pnpm add` errors.
 
@@ -143,12 +144,29 @@ Add these in **Project → Settings → Environment Variables**:
 
 ### After deploy
 
+Verify the deployment URL from the Vercel dashboard (**Deployments → latest → Visit**) before using the custom domain. If you see `DEPLOYMENT_NOT_FOUND`, the domain is not linked to a live production deployment — see troubleshooting below.
+
 ```bash
 pnpm --filter @nexus/web exec prisma migrate deploy
 pnpm --filter @nexus/web prisma:seed   # first time only
 ```
 
 Or run migrations from Neon SQL console / local machine against production `DATABASE_URL`.
+
+### Fix `404 DEPLOYMENT_NOT_FOUND` on `*.vercel.app`
+
+This is a **Vercel domain/deployment** issue, not a missing `/login` page in the app.
+
+1. Open **Vercel → your project → Deployments**.
+2. Find the latest deployment with status **Ready** (green).
+3. Click **Visit** on that deployment. If this URL works but `ibbul-eventhub.vercel.app` does not, go to step 4.
+4. **Settings → Domains** — confirm `ibbul-eventhub.vercel.app` is listed under **this** project (not an old/deleted project).
+5. On the latest Ready deployment, open **⋯ → Promote to Production** (if it is not already Production).
+6. **Settings → Git → Production Branch** must match your branch (e.g. `main`).
+7. Clear **Output Directory** override (must be empty for Next.js).
+8. Redeploy: **Deployments → Redeploy** on the latest commit.
+
+Required **Environment Variables** (Production): `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` = `https://ibbul-eventhub.vercel.app`, `REDIS_URL`.
 
 ### Common Vercel errors
 
