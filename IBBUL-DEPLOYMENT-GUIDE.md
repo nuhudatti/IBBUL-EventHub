@@ -130,7 +130,7 @@ This repo is a **pnpm + Turbo monorepo**. Only `apps/web` deploys to Vercel (the
 
 If you previously set custom Install/Build commands in the Vercel dashboard, **clear them** (toggle Override off) so `apps/web/vercel.json` is used, or paste the exact commands above.
 
-The repo includes `apps/web/vercel.json` which installs from the monorepo root and builds only `@nexus/web`.
+**Important:** `pnpm-lock.yaml` must be committed to git (it is not gitignored). Vercel uses `--frozen-lockfile`; without the lockfile in the repo, install always fails.
 
 ### Environment variables on Vercel
 
@@ -158,7 +158,7 @@ Or run migrations from Neon SQL console / local machine against production `DATA
 | `node_modules missing` | Do not use npm — use pnpm install from repo root (see `vercel.json`) |
 | `pnpm add @prisma/client` during build | Fix `@prisma/client` version in `apps/web/package.json` (must not be empty); run install before build |
 | `npm run vercel-build` failed | Remove npm build override; use `cd ../.. && pnpm vercel-build` |
-| npm warnings about `node-linker` | Harmless if install uses pnpm; caused when npm reads `.npmrc` — switch to pnpm |
+| `ERR_PNPM_FROZEN_LOCKFILE_WITH_OUTDATED_LOCKFILE` | Commit `pnpm-lock.yaml` to git (remove from `.gitignore`), push, redeploy |
 | Prisma client error on build | `build` script runs `prisma generate` — redeploy after pulling latest |
 
 ---
